@@ -22,28 +22,49 @@ class RolePermissionSeeder extends Seeder
         $roleWarga = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'warga']);
 
         // Default Permissions
-        $permissions = [
-            'view_house',
-            'view_any_house',
-            'create_house',
-            'update_house',
-            'delete_house',
-            'delete_any_house',
-            'view_resident',
-            'view_any_resident',
-            'create_resident',
-            'update_resident',
-            'delete_resident',
-            'delete_any_resident',
+        $resources = [
+            'house',
+            'resident',
+            'ipl_payment',
+            'vehicle',
+            'inventory',
+            'expense',
+            'user',
+            'role',
+            'permission',
+            'system_setting',
         ];
 
-        foreach ($permissions as $permission) {
-            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission]);
+        $actions = [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'restore',
+            'restore_any',
+            'force_delete',
+            'force_delete_any',
+        ];
+
+        $allPermissions = [];
+        foreach ($resources as $resource) {
+            foreach ($actions as $action) {
+                $allPermissions[] = "{$action}_{$resource}";
+            }
+        }
+        
+        // Add specific page permissions if needed
+        $allPermissions[] = 'page_ManageSystemSettings';
+
+        foreach ($allPermissions as $permission) {
+             \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Assign Permissions
-        $roleSuperAdmin->syncPermissions($permissions);
-        $roleAdminWarga->givePermissionTo(['view_house', 'view_any_house', 'view_resident', 'view_any_resident']); 
+        $roleSuperAdmin->syncPermissions($allPermissions);
+        $roleAdminWarga->givePermissionTo($allPermissions); // Give full access to helper for now
         
         // Create Super Admin User
         $user = \App\Models\User::firstOrCreate(
