@@ -43,16 +43,19 @@ class ManageSystemSettings extends Page
                     ]),
                 \Filament\Forms\Components\Section::make('Konfigurasi Peta')
                     ->schema([
+                        \Filament\Forms\Components\View::make('filament.forms.components.system-map-picker'),
                         \Filament\Forms\Components\Grid::make(2)
                             ->schema([
                                 \Filament\Forms\Components\TextInput::make('map_latitude')
                                     ->label('Latitude')
                                     ->numeric()
-                                    ->required(),
+                                    ->required()
+                                    ->reactive(),
                                 \Filament\Forms\Components\TextInput::make('map_longitude')
                                     ->label('Longitude')
                                     ->numeric()
-                                    ->required(),
+                                    ->required()
+                                    ->reactive(),
                             ]),
                         \Filament\Forms\Components\TextInput::make('map_zoom')
                             ->label('Default Zoom Level')
