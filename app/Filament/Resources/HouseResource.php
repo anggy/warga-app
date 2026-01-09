@@ -49,6 +49,21 @@ class HouseResource extends Resource
                     ])
                     ->required()
                     ->default('occupied'),
+                Forms\Components\Section::make('Lokasi Peta')
+                    ->schema([
+                        Forms\Components\View::make('filament.forms.components.map-picker'),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('latitude')
+                                    ->numeric()
+                                    ->label('Latitude')
+                                    ->reactive(),
+                                Forms\Components\TextInput::make('longitude')
+                                    ->numeric()
+                                    ->label('Longitude')
+                                    ->reactive(),
+                            ]),
+                    ]),
             ]);
     }
 
