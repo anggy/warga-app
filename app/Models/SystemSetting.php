@@ -12,5 +12,7 @@ class SystemSetting extends Model
         'map_longitude',
         'map_zoom',
         'description',
+        'bot_port',
+        'bot_session_id',
     ];
 }

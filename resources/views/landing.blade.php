@@ -38,6 +38,7 @@
                     <a href="#financial" class="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Laporan Keuangan</a>
                     <a href="#features" class="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Fitur</a>
                     <a href="#map-section" class="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Peta Area</a>
+                    <a href="/api/documentation" target="_blank" class="text-gray-600 hover:text-indigo-600 font-medium transition-colors">API Docs</a>
                     <a href="#contact" class="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Kontak</a>
                 </div>
                 <div>
@@ -202,6 +203,7 @@
                 <div class="flex space-x-6">
                     <a href="#" class="text-slate-400 hover:text-white transition-colors">Privacy</a>
                     <a href="#" class="text-slate-400 hover:text-white transition-colors">Terms</a>
+                     <a href="/api/documentation" target="_blank" class="text-slate-400 hover:text-white transition-colors">API Docs</a>
                     <a href="#" class="text-slate-400 hover:text-white transition-colors">Twitter</a>
                     <a href="#" class="text-slate-400 hover:text-white transition-colors">Instagram</a>
                 </div>
