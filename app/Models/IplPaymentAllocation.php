@@ -4,20 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Expense extends Model
+class IplPaymentAllocation extends Model
 {
     protected $fillable = [
-        'description',
-        'amount',
-        'date',
+        'ipl_payment_id',
         'fund_id',
-        'notes',
+        'fund_name',
+        'amount',
     ];
 
-    protected $casts = [
-        'date' => 'date',
-        'amount' => 'decimal:2',
-    ];
+    public function iplPayment()
+    {
+        return $this->belongsTo(IplPayment::class);
+    }
 
     public function fund()
     {

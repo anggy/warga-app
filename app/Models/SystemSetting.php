@@ -14,5 +14,9 @@ class SystemSetting extends Model
         'description',
         'bot_port',
         'bot_session_id',
+        'ipl_amount',
+        'allocation_security_amount',
+        'allocation_maintenance_amount',
+        'allocation_resident_cash_amount',
     ];
 }

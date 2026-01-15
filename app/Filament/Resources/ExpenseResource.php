@@ -21,6 +21,7 @@ class ExpenseResource extends Resource
     protected static ?string $navigationLabel = 'Pengeluaran';
     protected static ?string $modelLabel = 'Pengeluaran';
     protected static ?string $pluralModelLabel = 'Data Pengeluaran';
+    protected static ?string $navigationGroup = 'Keuangan';
 
     public static function form(Form $form): Form
     {
@@ -39,15 +40,11 @@ class ExpenseResource extends Resource
                     ->label('Tanggal')
                     ->required()
                     ->maxDate(now()),
-                Forms\Components\Select::make('category')
-                    ->label('Kategori')
-                    ->options([
-                        'Maintenance' => 'Perawatan/Perbaikan',
-                        'Salary' => 'Gaji Satpam/Kebersihan',
-                        'Event' => 'Acara Warga',
-                        'Utility' => 'Listrik/Air Fasum',
-                        'Other' => 'Lain-lain',
-                    ])
+                Forms\Components\Select::make('fund_id')
+                    ->label('Pos Anggaran (Kategori)')
+                    ->relationship('fund', 'name')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 Forms\Components\Textarea::make('notes')
                     ->label('Catatan')
@@ -66,8 +63,8 @@ class ExpenseResource extends Resource
                 Tables\Columns\TextColumn::make('description')
                     ->label('Deskripsi')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('category')
-                    ->label('Kategori')
+                Tables\Columns\TextColumn::make('fund.name')
+                    ->label('Pos Anggaran')
                     ->badge(),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Jumlah')

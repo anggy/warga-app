@@ -21,6 +21,7 @@ class IplPaymentResource extends Resource
     protected static ?string $navigationLabel = 'Pembayaran IPL';
     protected static ?string $modelLabel = 'Pembayaran IPL';
     protected static ?string $pluralModelLabel = 'Pembayaran IPL';
+    protected static ?string $navigationGroup = 'Keuangan';
 
     public static function form(Form $form): Form
     {
@@ -39,7 +40,13 @@ class IplPaymentResource extends Resource
                     ->required()
                     ->numeric()
                     ->prefix('Rp')
-                    ->label('Jumlah'),
+                    ->prefix('Rp')
+                    ->label('Jumlah')
+                    ->helperText(function () {
+                        $total = \App\Models\Fund::where('is_active', true)->sum('default_amount');
+                        $nominal = number_format($total, 0, ',', '.');
+                        return "Nominal IPL standar: Rp {$nominal} (Total dari Pos Anggaran Aktif)";
+                    }),
                 Forms\Components\TextInput::make('period')
                     ->placeholder('YYYY-MM')
                     ->required()
@@ -47,13 +54,30 @@ class IplPaymentResource extends Resource
                 Forms\Components\DatePicker::make('paid_at')
                     ->required()
                     ->label('Tanggal Bayar'),
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'paid' => 'Lunas',
-                        'pending' => 'Belum Lunas',
+                Forms\Components\FileUpload::make('proof_of_transfer')
+                    ->label('Bukti Transfer')
+                    ->image()
+                    ->directory('ipl-proofs')
+                    ->visibility('public'),
+                Forms\Components\Hidden::make('status')
+                    ->default('pending'),
+                Forms\Components\Repeater::make('allocations')
+                    ->relationship()
+                    ->schema([
+                        Forms\Components\TextInput::make('fund_name')
+                            ->label('Pos Anggaran')
+                            ->disabled(),
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Jumlah')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->disabled(),
                     ])
-                    ->required()
-                    ->label('Status'),
+                    ->columns(2)
+                    ->addable(false)
+                    ->deletable(false)
+                    ->reorderable(false)
+                    ->visible(fn ($record) => $record && $record->status === 'paid'),
             ]);
     }
 
@@ -79,6 +103,9 @@ class IplPaymentResource extends Resource
                     ->label('Tgl Bayar')
                     ->date()
                     ->sortable(),
+                Tables\Columns\ImageColumn::make('proof_of_transfer')
+                    ->label('Bukti Transfer')
+                    ->visibility('public'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -102,6 +129,61 @@ class IplPaymentResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('approve')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (IplPayment $record) => $record->status === 'pending')
+                    ->modalHeading('Konfirmasi Pembayaran')
+                    ->modalDescription('Pastikan alokasi dana sudah sesuai sebelum menyetujui pembayaran.')
+                    ->form(function () {
+                        $funds = \App\Models\Fund::where('is_active', true)->get();
+                        $allocations = $funds->map(fn ($fund) => [
+                            'fund_id' => $fund->id,
+                            'name' => $fund->name, // Visible label
+                            'amount' => $fund->default_amount,
+                        ])->toArray();
+
+                        return [
+                            Forms\Components\Repeater::make('allocations')
+                                ->label('Rincian Alokasi Dana')
+                                ->schema([
+                                    Forms\Components\Hidden::make('fund_id'),
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Pos Anggaran')
+                                        ->disabled()
+                                        ->dehydrated(false), // Don't submit this
+                                    Forms\Components\TextInput::make('amount')
+                                        ->label('Jumlah')
+                                        ->numeric()
+                                        ->prefix('Rp')
+                                        ->required(),
+                                ])
+                                ->addable(false)
+                                ->deletable(false)
+                                ->reorderable(false)
+                                ->default($allocations)
+                        ];
+                    })
+                    ->action(function (IplPayment $record, array $data) {
+                        // Create allocations from the submitted data
+                        foreach ($data['allocations'] as $allocation) {
+                            $fund = \App\Models\Fund::find($allocation['fund_id']);
+                            
+                            $record->allocations()->create([
+                                'fund_id' => $allocation['fund_id'],
+                                'fund_name' => $fund ? $fund->name : 'Unknown', // Fallback or lookup
+                                'amount' => $allocation['amount'],
+                            ]);
+                        }
+
+                        $record->update(['status' => 'paid']);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pembayaran berhasil disetujui')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

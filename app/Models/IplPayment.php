@@ -13,7 +13,13 @@ class IplPayment extends Model
         'period',
         'paid_at',
         'status',
+        'proof_of_transfer',
     ];
+
+    public function allocations()
+    {
+        return $this->hasMany(IplPaymentAllocation::class);
+    }
 
     protected $casts = [
         'paid_at' => 'date',
